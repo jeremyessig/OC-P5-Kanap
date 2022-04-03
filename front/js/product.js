@@ -11,7 +11,7 @@ const getItemID = () => {
     }
 }
 
-const colorList = (list) =>{
+const renderColorList = (list) =>{
     let html = "";
     list.forEach(element => {
         html += `<option value="${element}">${element}</option>`
@@ -43,7 +43,7 @@ const renderProduct = (product) =>{
                   <label for="color-select">Choisir une couleur :</label>
                   <select name="color-select" id="colors">
                       <option value="">--SVP, choisissez une couleur --</option>
-                      ${colorList(product.colors)}
+                      ${renderColorList(product.colors)}
                   </select>
                 </div>
 
@@ -63,6 +63,35 @@ const renderProduct = (product) =>{
 }
 
 
+// récupère l'id, la quantité, la couleur
+const addToCart = () =>{
+    let product = {
+        id: getItemID(),
+        quantity: document.getElementById("quantity").value,
+        color: document.getElementById("colors").value
+    }
+    if(product.quantity < 1 || product.color === ""){
+        window.alert("Veuillez remplir correctement les champs");
+        return
+    }
+    addToLocalStorage(product);
+}
+
+const addToLocalStorage = (obj) =>{
+    let products = []
+    if(localStorage.getItem("products")){
+        let string = localStorage.getItem("products");
+        products = JSON.parse(string);
+        products.push(obj);
+    }else{
+        products.push(obj);
+    }
+
+    let string = JSON.stringify(products)
+    localStorage.setItem("products", string);
+}
+
+
 // Execution du script
 if(getItemID()){
     fetch(`http://localhost:3000/api/products/${getItemID()}`)
@@ -71,6 +100,11 @@ if(getItemID()){
             return res.json();
         }
     })
-    .then(res => renderProduct(res))
+    .then(res => {
+        renderProduct(res);
+        document.getElementById("addToCart").addEventListener("click", ()=>{
+            addToCart()
+        })
+    })
     .catch(err => console.log(err));
 }
