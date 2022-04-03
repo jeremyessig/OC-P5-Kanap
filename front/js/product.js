@@ -11,7 +11,16 @@ const getItemID = () => {
     }
 }
 
+const colorList = (list) =>{
+    let html = "";
+    list.forEach(element => {
+        html += `<option value="${element}">${element}</option>`
+    });
+    return html
+}
+
 const renderProduct = (product) =>{
+    console.log(product)
     section.innerHTML = `
     <article>
             <div class="item__img">
@@ -21,7 +30,7 @@ const renderProduct = (product) =>{
 
               <div class="item__content__titlePrice">
                 <h1 id="title">${product.name}</h1>
-                <p>Prix : <span id="price"><!-- 42 --></span>€</p>
+                <p>Prix : <span id="price">${product.price}</span>€</p>
               </div>
 
               <div class="item__content__description">
@@ -34,8 +43,7 @@ const renderProduct = (product) =>{
                   <label for="color-select">Choisir une couleur :</label>
                   <select name="color-select" id="colors">
                       <option value="">--SVP, choisissez une couleur --</option>
-<!--                       <option value="vert">vert</option>
-                      <option value="blanc">blanc</option> -->
+                      ${colorList(product.colors)}
                   </select>
                 </div>
 
