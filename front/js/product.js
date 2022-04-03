@@ -1,3 +1,8 @@
+// Variables
+const section = document.querySelector("section")
+
+
+// Fonctions 
 const getItemID = () => {
     let url = new URL (window.location.href)
     let search_params = new URLSearchParams(url.search); 
@@ -6,6 +11,51 @@ const getItemID = () => {
     }
 }
 
+const renderProduct = (product) =>{
+    section.innerHTML = `
+    <article>
+            <div class="item__img">
+              <img src="${product.imageUrl}" alt="Photographie d'un canapé">
+            </div>
+            <div class="item__content">
+
+              <div class="item__content__titlePrice">
+                <h1 id="title">${product.name}</h1>
+                <p>Prix : <span id="price"><!-- 42 --></span>€</p>
+              </div>
+
+              <div class="item__content__description">
+                <p class="item__content__description__title">Description :</p>
+                <p id="description">${product.description}</p>
+              </div>
+
+              <div class="item__content__settings">
+                <div class="item__content__settings__color">
+                  <label for="color-select">Choisir une couleur :</label>
+                  <select name="color-select" id="colors">
+                      <option value="">--SVP, choisissez une couleur --</option>
+<!--                       <option value="vert">vert</option>
+                      <option value="blanc">blanc</option> -->
+                  </select>
+                </div>
+
+                <div class="item__content__settings__quantity">
+                  <label for="itemQuantity">Nombre d'article(s) (1-100) :</label>
+                  <input type="number" name="itemQuantity" min="1" max="100" value="0" id="quantity">
+                </div>
+              </div>
+
+              <div class="item__content__addButton">
+                <button id="addToCart">Ajouter au panier</button>
+              </div>
+
+            </div>
+          </article>
+    `
+}
+
+
+// Execution du script
 if(getItemID()){
     fetch(`http://localhost:3000/api/products/${getItemID()}`)
     .then(res => {
@@ -13,10 +63,6 @@ if(getItemID()){
             return res.json();
         }
     })
-    .then(res => {
-        console.log(res);
-    }
-        )
-    //.then(() => renderItems())
+    .then(res => renderProduct(res))
     .catch(err => console.log(err));
 }
