@@ -78,27 +78,30 @@ const addToCart = () =>{
 }
 
 
-const isProductInCart = (product, productInCart) =>{
+const isSameProduct = (product, productInCart) =>{
     if(JSON.stringify(product) === JSON.stringify(productInCart)){
         return true;
     }
     return false;
 }
 
+const isProductInCart = (obj, products) =>{
+    let isInCart = false;
+    products.forEach(element => {
+        if(isSameProduct(obj, element)){
+            isInCart = true;
+            return
+        }
+    });
+    return isInCart;
+}
 
 const addToLocalStorage = (obj) =>{
-    let isInCart = false;
     let products = [];
     if(localStorage.getItem("products")){
         let string = localStorage.getItem("products");
         products = JSON.parse(string);
-        products.forEach(element => {
-            if(isProductInCart(obj, element)){
-                isInCart = true;
-                return
-            }
-        });
-        if (!isInCart) {
+        if (!isProductInCart(obj, products)) {
             products.push(obj);
         }else{
             window.alert("Ce produit est déjà dans votre panier");
