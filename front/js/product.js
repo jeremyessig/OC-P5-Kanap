@@ -78,17 +78,10 @@ const addToCart = () =>{
 }
 
 
-const isSameProduct = (product, productInCart) =>{
-    if(JSON.stringify(product) === JSON.stringify(productInCart)){
-        return true;
-    }
-    return false;
-}
-
 const isProductInCart = (obj, products) =>{
     let isInCart = false;
     products.forEach(element => {
-        if(isSameProduct(obj, element)){
+        if(obj.id === element.id && obj.color === element.color){
             isInCart = true;
             return
         }
@@ -104,8 +97,9 @@ const addToLocalStorage = (obj) =>{
         if (!isProductInCart(obj, products)) {
             products.push(obj);
         }else{
-            window.alert("Ce produit est déjà dans votre panier");
-            return
+            let product = products.find(element => element.id === obj.id && element.color === obj.color)
+            product.quantity = parseInt(product.quantity)
+            product.quantity += parseInt(obj.quantity)
         }
     }else{
         products.push(obj);
