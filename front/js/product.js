@@ -77,12 +77,33 @@ const addToCart = () =>{
     addToLocalStorage(product);
 }
 
+
+const isProductInCart = (product, productInCart) =>{
+    if(JSON.stringify(product) === JSON.stringify(productInCart)){
+        return true;
+    }
+    return false;
+}
+
+
 const addToLocalStorage = (obj) =>{
-    let products = []
+    let isInCart = false;
+    let products = [];
     if(localStorage.getItem("products")){
         let string = localStorage.getItem("products");
         products = JSON.parse(string);
-        products.push(obj);
+        products.forEach(element => {
+            if(isProductInCart(obj, element)){
+                isInCart = true;
+                return
+            }
+        });
+        if (!isInCart) {
+            products.push(obj);
+        }else{
+            window.alert("Ce produit est déjà dans votre panier");
+            return
+        }
     }else{
         products.push(obj);
     }
