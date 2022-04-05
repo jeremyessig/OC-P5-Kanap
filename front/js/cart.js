@@ -1,5 +1,5 @@
 const items = document.getElementById("cart__items");
-
+let productsInCart = [];
 
 
 const getCartFromLocalStorage = () =>{
@@ -9,7 +9,7 @@ const getCartFromLocalStorage = () =>{
 
 //Retourne l'objet 
 const getProductFromCart = (products) =>{
-    let cart = [];
+    let productsInCart = [];
     let local = getCartFromLocalStorage();
     local.forEach(prod => {
         products.forEach(element => {
@@ -18,13 +18,40 @@ const getProductFromCart = (products) =>{
                         quantity: parseInt(prod.quantity),
                         colorSelected: prod.color
                     }
-                    cart.push(obj)
+                    productsInCart.push(obj)
                 }
         });
     });
-    return cart;
+    return productsInCart;
 }
 
+const newObjPorduct = (product) =>{
+    let newProduct = {
+        id: product._id,
+        quantity: product.quantity,
+        color: product.colorSelected
+    }
+    return newProduct
+}
+
+
+const updateLocalStorage = () =>{
+    let productsToStringify = [];
+    window.localStorage.removeItem('products');
+    productsInCart.forEach(element => {
+        productsToStringify.push(newObjPorduct(element));
+    });
+
+    let string = JSON.stringify(productsToStringify)
+    localStorage.setItem("products", string);
+}
+
+
+const setProductQuantity = (id, color, quantity) =>{
+    productsInCart.find(element => element._id === id && element.colorSelected === color).quantity = quantity;
+    updateLocalStorage();
+
+}
 
 
 const renderItem = (products) =>{
@@ -49,7 +76,7 @@ const renderItem = (products) =>{
                 <div class="cart__item__content__settings">
                     <div class="cart__item__content__settings__quantity">
                     <p>Qté : </p>
-                    <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${product.quantity}">
+                    <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${product.quantity}" data-id="${product._id}" data-color="${product.colorSelected}">
                     </div>
                     <div class="cart__item__content__settings__delete">
                     <p class="deleteItem">Supprimer</p>
@@ -72,8 +99,13 @@ fetch(`http://localhost:3000/api/products`)
     }
 })
 .then(res => {
-    let productsInCart = getProductFromCart(res)
+    productsInCart = getProductFromCart(res)
     console.log(productsInCart)
     renderItem(productsInCart)
+    document.querySelectorAll('.itemQuantity').forEach(item => {
+        item.addEventListener('click', event => {
+          setProductQuantity(item.getAttribute("data-id"), item.getAttribute("data-color"), item.value);
+        })
+      })
 })
 .catch(err => console.log(err));
