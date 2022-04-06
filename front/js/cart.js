@@ -53,6 +53,13 @@ const setProductQuantity = (id, color, quantity) =>{
 
 }
 
+const removeFromCart = (id, color) =>{
+    delete productsInCart[productsInCart.indexOf(productsInCart.find(element => element._id === id && element.colorSelected === color))]
+    console.log(productsInCart)
+    updateLocalStorage();
+    location.reload();
+}
+
 
 const renderItem = (products) =>{
 
@@ -63,7 +70,7 @@ const renderItem = (products) =>{
         .map((product) => {
             
             return `
-            <article class="cart__item" data-id="{${product._id}}" data-color="{${product.colorSelected}}">
+            <article class="cart__item" data-id="${product._id}" data-color="${product.colorSelected}">
                 <div class="cart__item__img">
                     <img src="${product.imageUrl}" alt="${product.altTxt}">
                 </div>
@@ -100,11 +107,29 @@ fetch(`http://localhost:3000/api/products`)
 })
 .then(res => {
     productsInCart = getProductFromCart(res)
-    console.log(productsInCart)
+    //console.log(productsInCart)
     renderItem(productsInCart)
-    document.querySelectorAll('.itemQuantity').forEach(item => {
-        item.addEventListener('click', event => {
-          setProductQuantity(item.getAttribute("data-id"), item.getAttribute("data-color"), item.value);
+    // document.querySelectorAll('.itemQuantity').forEach(item => {
+    //     item.addEventListener('click', event => {
+    //       setProductQuantity(
+    //           item.closest(".cart__item").getAttribute("data-id"), 
+    //           item.closest(".cart__item").getAttribute("data-color"), 
+    //           item.value);
+    //     })
+    //   })
+    document.querySelectorAll('article').forEach(article => {
+        //console.log(article.closest("div"))
+       article.querySelector('input').addEventListener('click', event => {
+          setProductQuantity(
+              article.getAttribute("data-id"), 
+              article.getAttribute("data-color"), 
+              article.querySelector('input').value);
+        })
+        article.querySelector('.deleteItem').addEventListener('click', event =>{
+            removeFromCart(
+                article.getAttribute("data-id"), 
+                article.getAttribute("data-color") 
+                );
         })
       })
 })
