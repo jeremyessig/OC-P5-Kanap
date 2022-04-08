@@ -1,6 +1,19 @@
-const items = document.getElementById("cart__items");
+//____________________Variables et constantes________________________________
+const cartItems = document.getElementById("cart__items");
+const totalPrice = document.getElementById("totalPrice");
+const orderBtn = document.getElementById('order');
 let productsInCart = [];
 
+
+
+
+//________________________ Fonctions___________________________________________
+
+// Validation du formulaire de contact
+
+
+
+// Afficahge et gestion des produits 
 
 const getCartFromLocalStorage = () =>{
     let string = localStorage.getItem("products");
@@ -49,6 +62,7 @@ const updateLocalStorage = () =>{
 
 const setProductQuantity = (id, color, quantity) =>{
     productsInCart.find(element => element._id === id && element.colorSelected === color).quantity = quantity;
+    renderTotalPrice(productsInCart);
     updateLocalStorage();
 
 }
@@ -60,13 +74,31 @@ const removeFromCart = (id, color) =>{
     location.reload();
 }
 
+const formatToCurrency = amount => {
+    return amount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,");
+  };
+
+const calculateTotalPrice = (products) => {
+    let price = 0
+    products.forEach(element => {
+        price += parseInt(element.price) * parseInt(element.quantity)
+    });
+    price = price / 100;
+    return formatToCurrency(price);
+}
+
+const renderTotalPrice = (products) =>{
+    totalPrice.innerHTML = `
+    ${calculateTotalPrice(products)}
+    `
+} 
 
 const renderItem = (products) =>{
 
     if(products.length === 0){
-        items.innerHTML = "<h2> Aucun résultat</h2>";
+        cartItems.innerHTML = "<h2> Aucun résultat</h2>";
     }else{
-        items.innerHTML = products
+        cartItems.innerHTML = products
         .map((product) => {
             
             return `
@@ -78,7 +110,8 @@ const renderItem = (products) =>{
                 <div class="cart__item__content__description">
                     <h2>${product.name}</h2>
                     <p>${product.colorSelected}</p>
-                    <p>${product.price * product.quantity / 100} €</p>
+                    <!--<p>${product.price * product.quantity / 100} €</p>-->
+                    <p>${ formatToCurrency(product.price / 100)} €</p>
                 </div>
                 <div class="cart__item__content__settings">
                     <div class="cart__item__content__settings__quantity">
@@ -97,7 +130,7 @@ const renderItem = (products) =>{
 }
 
 
-// Execution du script
+// ____________________________Execution du script________________________________________
 
 fetch(`http://localhost:3000/api/products`)
 .then(res => {
@@ -108,17 +141,9 @@ fetch(`http://localhost:3000/api/products`)
 .then(res => {
     productsInCart = getProductFromCart(res)
     //console.log(productsInCart)
-    renderItem(productsInCart)
-    // document.querySelectorAll('.itemQuantity').forEach(item => {
-    //     item.addEventListener('click', event => {
-    //       setProductQuantity(
-    //           item.closest(".cart__item").getAttribute("data-id"), 
-    //           item.closest(".cart__item").getAttribute("data-color"), 
-    //           item.value);
-    //     })
-    //   })
+    renderItem(productsInCart);
+    renderTotalPrice(productsInCart);
     document.querySelectorAll('article').forEach(article => {
-        //console.log(article.closest("div"))
        article.querySelector('input').addEventListener('click', event => {
           setProductQuantity(
               article.getAttribute("data-id"), 

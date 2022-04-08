@@ -30,7 +30,7 @@ const renderProduct = (product) =>{
 
               <div class="item__content__titlePrice">
                 <h1 id="title">${product.name}</h1>
-                <p>Prix : <span id="price">${product.price/100}</span>€</p>
+                <p>Prix : <span id="price">${ formatToCurrency(product.price/100)}</span>€</p>
               </div>
 
               <div class="item__content__description">
@@ -64,6 +64,10 @@ const renderProduct = (product) =>{
 
 
 // récupère l'id, la quantité, la couleur
+const formatToCurrency = amount => {
+    return amount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,");
+  };
+
 const addToCart = () =>{
     let product = {
         id: getItemID(),
