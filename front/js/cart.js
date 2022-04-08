@@ -34,7 +34,7 @@ const isFormValid = () =>{
         }else if (field === emailField && !field.value.match(/^[\w_-]+@[\w-]+\.[a-z]{2,4}$/i)){
             errMsg.textContent = "Veuillez entrer une adresse e-mail valide";
             ok = false;
-        }else if(!field.value.match(/^[a-zA-ZÀ-ÿ-. ]*$/)){
+        }else if(!field.value.match(/^[a-zA-ZÀ-ÿ-. ]*$/) && field !== emailField ){
             errMsg.textContent = "Les caractères spéciaux ne sont pas acceptés";
             ok = false;
         }else{
