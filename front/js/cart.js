@@ -2,16 +2,47 @@
 const cartItems = document.getElementById("cart__items");
 const totalPrice = document.getElementById("totalPrice");
 const orderBtn = document.getElementById('order');
+
+const firstNameField = document.getElementById('firstName');
+const lastNameField = document.getElementById('lastName');
+const addressField = document.getElementById('address');
+const cityField = document.getElementById('city');
+const emailField = document.getElementById('email');
+
+
 let productsInCart = [];
-
-
-
 
 //________________________ Fonctions___________________________________________
 
 // Validation du formulaire de contact
 
-
+/**
+ * Vérifie si les champs sont valides
+ * Sinon renvoie les erreurs 
+ */
+const isFormValid = () =>{
+    let ok = true;
+    let fields = [firstNameField, lastNameField, addressField, cityField, emailField];
+    fields.forEach(field => {
+        let errMsg = field.closest('div').querySelector('p');
+        if (!field.value){
+            errMsg.textContent = "Veuillez remplir ce champs";
+            ok = false;
+        }else if(field.value.length > 0 && (field.value.length < 3)){
+            errMsg.textContent = "Veuillez entrer au minimum 3 caractères";
+            ok = false;
+        }else if (field === emailField && !field.value.match(/^[\w_-]+@[\w-]+\.[a-z]{2,4}$/i)){
+            errMsg.textContent = "Veuillez entrer une adresse e-mail valide";
+            ok = false;
+        }else if(!field.value.match(/^[a-zA-ZÀ-ÿ-. ]*$/)){
+            errMsg.textContent = "Les caractères spéciaux ne sont pas acceptés";
+            ok = false;
+        }else{
+            errMsg.textContent = "";
+        }
+    });
+    return ok
+}
 
 // Afficahge et gestion des produits 
 
@@ -20,9 +51,13 @@ const getCartFromLocalStorage = () =>{
     return JSON.parse(string);
 }
 
-//Retourne l'objet 
+/**
+ * 
+ * @param {array} products 
+ * @returns {array}
+ */
 const getProductFromCart = (products) =>{
-    let productsInCart = [];
+    let allProducts = [];
     let local = getCartFromLocalStorage();
     local.forEach(prod => {
         products.forEach(element => {
@@ -31,13 +66,18 @@ const getProductFromCart = (products) =>{
                         quantity: parseInt(prod.quantity),
                         colorSelected: prod.color
                     }
-                    productsInCart.push(obj)
+                    allProducts.push(obj)
                 }
         });
     });
-    return productsInCart;
+    return allProducts;
 }
 
+/**
+ * 
+ * @param {Object} product 
+ * @returns {Object}
+ */
 const newObjPorduct = (product) =>{
     let newProduct = {
         id: product._id,
@@ -67,16 +107,25 @@ const setProductQuantity = (id, color, quantity) =>{
 
 }
 
+
 const removeFromCart = (id, color) =>{
-    delete productsInCart[productsInCart.indexOf(productsInCart.find(element => element._id === id && element.colorSelected === color))]
-    console.log(productsInCart)
+    delete productsInCart[
+        productsInCart.indexOf(
+            productsInCart.find(element => 
+                element._id === id && 
+                element.colorSelected === color
+                )
+            )
+    ]
     updateLocalStorage();
     location.reload();
 }
 
+
 const formatToCurrency = amount => {
     return amount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,");
   };
+
 
 const calculateTotalPrice = (products) => {
     let price = 0
@@ -86,6 +135,9 @@ const calculateTotalPrice = (products) => {
     price = price / 100;
     return formatToCurrency(price);
 }
+
+
+// Fonctions d'affichage et de rendu HTML
 
 const renderTotalPrice = (products) =>{
     totalPrice.innerHTML = `
@@ -145,17 +197,22 @@ fetch(`http://localhost:3000/api/products`)
     renderTotalPrice(productsInCart);
     document.querySelectorAll('article').forEach(article => {
        article.querySelector('input').addEventListener('click', event => {
-          setProductQuantity(
-              article.getAttribute("data-id"), 
-              article.getAttribute("data-color"), 
-              article.querySelector('input').value);
+            event.preventDefault();
+            setProductQuantity(
+                article.getAttribute("data-id"), 
+                article.getAttribute("data-color"), 
+                article.querySelector('input').value);
         })
         article.querySelector('.deleteItem').addEventListener('click', event =>{
+            event.preventDefault();
             removeFromCart(
                 article.getAttribute("data-id"), 
                 article.getAttribute("data-color") 
                 );
         })
       })
+    orderBtn.addEventListener('click', event =>{
+        isFormValid();
+    })
 })
 .catch(err => console.log(err));
