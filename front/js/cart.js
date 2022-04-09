@@ -44,6 +44,32 @@ const isFormValid = () =>{
     return ok
 }
 
+const getCustomerContact = () =>{
+    return {
+        firstName: firstNameField.value,
+        lastName: lastNameField.value,
+        address: addressField.value,
+        city: cityField.value,
+        email: emailField.value
+    }
+}
+
+const getCartProductsID = () =>{
+    let id = [];
+    productsInCart.forEach(product => {
+        id.push(product._id);
+    })
+    return id
+}
+
+const postOrderToServer = () =>{
+    return {
+        contact: getCustomerContact(),
+        products: getCartProductsID()
+    }
+}
+
+
 // Afficahge et gestion des produits 
 
 const getCartFromLocalStorage = () =>{
@@ -192,7 +218,8 @@ fetch(`http://localhost:3000/api/products`)
 })
 .then(res => {
     productsInCart = getProductFromCart(res)
-    //console.log(productsInCart)
+    console.log(productsInCart)
+    console.log(getCartProductsID())
     renderItem(productsInCart);
     renderTotalPrice(productsInCart);
     document.querySelectorAll('article').forEach(article => {
@@ -212,6 +239,7 @@ fetch(`http://localhost:3000/api/products`)
         })
       })
     orderBtn.addEventListener('click', event =>{
+        event.preventDefault();
         isFormValid();
     })
 })
