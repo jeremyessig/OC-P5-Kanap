@@ -62,11 +62,30 @@ const getCartProductsID = () =>{
     return id
 }
 
-const postOrderToServer = () =>{
+const createOrder = () =>{
     return {
         contact: getCustomerContact(),
         products: getCartProductsID()
     }
+}
+
+const postOrderToServer = () =>{
+    let bodyContent = JSON.stringify(createOrder());
+    fetch(`http://localhost:3000/api/products/order`, {
+        method: 'post',
+        headers: { "Content-Type" : "application/json", "Content-Length": "<calculated when request is sent>"},
+        body: bodyContent
+    })
+    .then(res => {
+        if (res.ok) {
+            return res.json();
+        }
+    })
+    .then(res => {
+        console.log(res)
+        window.location.href = `confirmation.html?orderId=${res.orderId}`;
+    })
+    .catch(err => console.log(err));
 }
 
 
@@ -207,6 +226,22 @@ const renderItem = (products) =>{
     }
 }
 
+// test
+const test = () =>{
+
+    return {
+        contact:{
+            firstName: "jean",
+            lastName: "Dupont",
+            address: "2 rue de la boustifaille",
+            city: "Paris",
+            email: "jean@test.fr"
+        },
+        products: ["107fb5b75607497b96722bda5b504926", "034707184e8e4eefb46400b5a3774b5f"]
+    }
+}
+
+
 
 // ____________________________Execution du script________________________________________
 
@@ -240,7 +275,10 @@ fetch(`http://localhost:3000/api/products`)
       })
     orderBtn.addEventListener('click', event =>{
         event.preventDefault();
-        isFormValid();
+        if(isFormValid()){
+            postOrderToServer();
+        }
+
     })
 })
 .catch(err => console.log(err));

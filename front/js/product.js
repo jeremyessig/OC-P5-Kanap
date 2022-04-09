@@ -3,11 +3,11 @@ const section = document.querySelector("section")
 
 
 // Fonctions 
-const getItemID = () => {
+const getItemID = (urlParam) => {
     let url = new URL (window.location.href)
     let search_params = new URLSearchParams(url.search); 
-    if(search_params.has('id')) {
-      return search_params.get('id');
+    if(search_params.has(urlParam)) {
+      return search_params.get(urlParam);
     }
 }
 
@@ -70,7 +70,7 @@ const formatToCurrency = amount => {
 
 const addToCart = () =>{
     let product = {
-        id: getItemID(),
+        id: getItemID('id'),
         quantity: document.getElementById("quantity").value,
         color: document.getElementById("colors").value
     }
@@ -115,8 +115,8 @@ const addToLocalStorage = (obj) =>{
 
 
 // Execution du script
-if(getItemID()){
-    fetch(`http://localhost:3000/api/products/${getItemID()}`)
+if(getItemID('id')){
+    fetch(`http://localhost:3000/api/products/${getItemID('id')}`)
     .then(res => {
         if (res.ok) {
             return res.json();
