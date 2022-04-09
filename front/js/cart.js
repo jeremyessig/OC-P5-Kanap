@@ -31,10 +31,10 @@ const isFormValid = () =>{
         }else if(field.value.length > 0 && (field.value.length < 3)){
             errMsg.textContent = "Veuillez entrer au minimum 3 caractères";
             ok = false;
-        }else if (field === emailField && !field.value.match(/^[\w_-]+@[\w-]+\.[a-z]{2,4}$/i)){
+        }else if (field === emailField && !field.value.match(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g)){
             errMsg.textContent = "Veuillez entrer une adresse e-mail valide";
             ok = false;
-        }else if(!field.value.match(/^[a-zA-ZÀ-ÿ-. ]*$/) && field !== emailField ){
+        }else if(!field.value.match(/^[a-zA-ZÀ-ÿ-0-9. ]*$/) && field !== emailField ){
             errMsg.textContent = "Les caractères spéciaux ne sont pas acceptés";
             ok = false;
         }else{
@@ -82,7 +82,7 @@ const postOrderToServer = () =>{
         }
     })
     .then(res => {
-        console.log(res)
+        localStorage.removeItem('products');
         window.location.href = `confirmation.html?orderId=${res.orderId}`;
     })
     .catch(err => console.log(err));
@@ -92,6 +92,9 @@ const postOrderToServer = () =>{
 // Afficahge et gestion des produits 
 
 const getCartFromLocalStorage = () =>{
+    if (localStorage.getItem("products") === null){
+        return false
+    }
     let string = localStorage.getItem("products");
     return JSON.parse(string);
 }
@@ -104,6 +107,9 @@ const getCartFromLocalStorage = () =>{
 const getProductFromCart = (products) =>{
     let allProducts = [];
     let local = getCartFromLocalStorage();
+    if (!local){
+        return allProducts;
+    }
     local.forEach(prod => {
         products.forEach(element => {
                 if(element._id === prod.id){
@@ -192,7 +198,7 @@ const renderTotalPrice = (products) =>{
 
 const renderItem = (products) =>{
 
-    if(products.length === 0){
+    if(products.length == 0){
         cartItems.innerHTML = "<h2> Aucun résultat</h2>";
     }else{
         cartItems.innerHTML = products
@@ -226,21 +232,6 @@ const renderItem = (products) =>{
     }
 }
 
-// test
-const test = () =>{
-
-    return {
-        contact:{
-            firstName: "jean",
-            lastName: "Dupont",
-            address: "2 rue de la boustifaille",
-            city: "Paris",
-            email: "jean@test.fr"
-        },
-        products: ["107fb5b75607497b96722bda5b504926", "034707184e8e4eefb46400b5a3774b5f"]
-    }
-}
-
 
 
 // ____________________________Execution du script________________________________________
@@ -253,8 +244,8 @@ fetch(`http://localhost:3000/api/products`)
 })
 .then(res => {
     productsInCart = getProductFromCart(res)
-    console.log(productsInCart)
-    console.log(getCartProductsID())
+    // console.log(productsInCart)
+    // console.log(getCartProductsID())
     renderItem(productsInCart);
     renderTotalPrice(productsInCart);
     document.querySelectorAll('article').forEach(article => {
@@ -275,6 +266,10 @@ fetch(`http://localhost:3000/api/products`)
       })
     orderBtn.addEventListener('click', event =>{
         event.preventDefault();
+        if(productsInCart.length === 0){
+            window.alert("Votre panier est vide !")
+            return
+        }
         if(isFormValid()){
             postOrderToServer();
         }
