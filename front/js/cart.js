@@ -2,6 +2,7 @@
 const cartItems = document.getElementById("cart__items");
 const totalPrice = document.getElementById("totalPrice");
 const orderBtn = document.getElementById('order');
+const totalQuantity = document.getElementById('totalQuantity');
 
 const firstNameField = document.getElementById('firstName');
 const lastNameField = document.getElementById('lastName');
@@ -12,39 +13,58 @@ const emailField = document.getElementById('email');
 
 let productsInCart = [];
 
-//________________________ Fonctions___________________________________________
 
+
+//________________________ Fonctions___________________________________________
+/**
+ * Créé les différents éléments HTML
+ * @param {*} elements 
+ * @returns Object
+ */
+const createElements = (elements) => {
+    let destructuring = {}
+    elements.forEach(element => {
+        const [key, html] = element.split(':')
+        destructuring[key] = document.createElement(html);
+    })
+    return destructuring;
+}
 // Validation du formulaire de contact
 
 /**
  * Vérifie si les champs sont valides
  * Sinon renvoie les erreurs 
  */
-const isFormValid = () =>{
+const isFormValid = () => {
     let ok = true;
     let fields = [firstNameField, lastNameField, addressField, cityField, emailField];
     fields.forEach(field => {
         let errMsg = field.closest('div').querySelector('p');
-        if (!field.value){
+        if (!field.value) {
             errMsg.textContent = "Veuillez remplir ce champs";
             ok = false;
-        }else if(field.value.length > 0 && (field.value.length < 3)){
+        } else if (field.value.length > 0 && (field.value.length < 3)) {
             errMsg.textContent = "Veuillez entrer au minimum 3 caractères";
             ok = false;
-        }else if (field === emailField && !field.value.match(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g)){
+        } else if (field === emailField && !field.value.match(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g)) {
             errMsg.textContent = "Veuillez entrer une adresse e-mail valide";
             ok = false;
-        }else if(!field.value.match(/^[a-zA-ZÀ-ÿ-0-9. ]*$/) && field !== emailField ){
+        } else if (!field.value.match(/^[a-zA-ZÀ-ÿ-0-9. ]*$/) && field !== emailField) {
             errMsg.textContent = "Les caractères spéciaux ne sont pas acceptés";
             ok = false;
-        }else{
+        } else {
             errMsg.textContent = "";
         }
     });
     return ok
 }
 
-const getCustomerContact = () =>{
+/**
+ * Renvoie les informations du client sous forme d'objet
+ * @returns 
+ */
+
+const getCustomerContact = () => {
     return {
         firstName: firstNameField.value,
         lastName: lastNameField.value,
@@ -54,7 +74,12 @@ const getCustomerContact = () =>{
     }
 }
 
-const getCartProductsID = () =>{
+
+/**
+ * Renvoie un tableau des ID des produits dans le panier 
+ * @returns 
+ */
+const getCartProductsID = () => {
     let id = [];
     productsInCart.forEach(product => {
         id.push(product._id);
@@ -62,37 +87,50 @@ const getCartProductsID = () =>{
     return id
 }
 
-const createOrder = () =>{
+
+/**
+ * Revnoie un objet contenant les informations de contact du client et ses achats
+ * @returns 
+ */
+
+const createOrder = () => {
     return {
         contact: getCustomerContact(),
         products: getCartProductsID()
     }
 }
 
-const postOrderToServer = () =>{
+
+/**
+ * Passe la commande auprès du serveur et redirige l'internaute sur la page de confirmation
+ */
+const postOrderToServer = () => {
     let bodyContent = JSON.stringify(createOrder());
     fetch(`http://localhost:3000/api/products/order`, {
         method: 'post',
-        headers: { "Content-Type" : "application/json", "Content-Length": "<calculated when request is sent>"},
+        headers: { "Content-Type": "application/json", "Content-Length": "<calculated when request is sent>" },
         body: bodyContent
     })
-    .then(res => {
-        if (res.ok) {
-            return res.json();
-        }
-    })
-    .then(res => {
-        localStorage.removeItem('products');
-        window.location.href = `confirmation.html?orderId=${res.orderId}`;
-    })
-    .catch(err => console.log(err));
+        .then(res => {
+            if (res.ok) {
+                return res.json();
+            }
+        })
+        .then(res => {
+            localStorage.removeItem('products');
+            window.location.href = `confirmation.html?orderId=${res.orderId}`;
+        })
+        .catch(err => console.log(err));
 }
 
 
-// Afficahge et gestion des produits 
+/**
+ * Renvoie les objets contenu dans le localstorage
+ * @returns 
+ */
 
-const getCartFromLocalStorage = () =>{
-    if (localStorage.getItem("products") === null){
+const getCartFromLocalStorage = () => {
+    if (localStorage.getItem("products") === null) {
         return false
     }
     let string = localStorage.getItem("products");
@@ -100,36 +138,39 @@ const getCartFromLocalStorage = () =>{
 }
 
 /**
+ * Compare les produits du localstorage avec la base de données 
+ * Retourne les produits que l'utilisateur à dans son localstorage
  * 
  * @param {array} products 
  * @returns {array}
  */
-const getProductFromCart = (products) =>{
+const getProductFromCart = (products) => {
     let allProducts = [];
     let local = getCartFromLocalStorage();
-    if (!local){
+    if (!local) {
         return allProducts;
     }
     local.forEach(prod => {
         products.forEach(element => {
-                if(element._id === prod.id){
-                    let obj = {...element, 
-                        quantity: parseInt(prod.quantity),
-                        colorSelected: prod.color
-                    }
-                    allProducts.push(obj)
+            if (element._id === prod.id) {
+                let obj = {
+                    ...element,
+                    quantity: parseInt(prod.quantity),
+                    colorSelected: prod.color
                 }
+                allProducts.push(obj)
+            }
         });
     });
     return allProducts;
 }
 
 /**
- * 
+ * Renvoie un objet de type product
  * @param {Object} product 
  * @returns {Object}
  */
-const newObjPorduct = (product) =>{
+const newObjPorduct = (product) => {
     let newProduct = {
         id: product._id,
         quantity: product.quantity,
@@ -139,7 +180,10 @@ const newObjPorduct = (product) =>{
 }
 
 
-const updateLocalStorage = () =>{
+/**
+ * Met à jour le localstorage de l'utilisateur
+ */
+const updateLocalStorage = () => {
     let productsToStringify = [];
     window.localStorage.removeItem('products');
     productsInCart.forEach(element => {
@@ -151,7 +195,13 @@ const updateLocalStorage = () =>{
 }
 
 
-const setProductQuantity = (id, color, quantity) =>{
+/**
+ * Met à jour la quantité du produit
+ * @param {*} id 
+ * @param {*} color 
+ * @param {*} quantity 
+ */
+const setProductQuantity = (id, color, quantity) => {
     productsInCart.find(element => element._id === id && element.colorSelected === color).quantity = quantity;
     renderTotalPrice(productsInCart);
     updateLocalStorage();
@@ -159,25 +209,40 @@ const setProductQuantity = (id, color, quantity) =>{
 }
 
 
-const removeFromCart = (id, color) =>{
+/**
+ *  Supprime un produit du panier et recharge la page pour la mettre à jour
+ * @param {*} id 
+ * @param {*} color 
+ */
+const removeFromCart = (id, color) => {
     delete productsInCart[
         productsInCart.indexOf(
-            productsInCart.find(element => 
-                element._id === id && 
+            productsInCart.find(element =>
+                element._id === id &&
                 element.colorSelected === color
-                )
             )
+        )
     ]
     updateLocalStorage();
     location.reload();
 }
 
 
+/**
+ * Retourne une somme formatée en euro
+ * @param {*} amount 
+ * @returns 
+ */
 const formatToCurrency = amount => {
     return amount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,");
-  };
+};
 
 
+/**
+ *  Renvoie le prix total des différents produits dans le panier
+ * @param {*} products 
+ * @returns 
+ */
 const calculateTotalPrice = (products) => {
     let price = 0
     products.forEach(element => {
@@ -187,48 +252,124 @@ const calculateTotalPrice = (products) => {
     return formatToCurrency(price);
 }
 
+const calculateTotalProductQuantity = (products) => {
+    let quantity = 0;
+
+    products.forEach(element => {
+        quantity += parseInt(element.quantity)
+    });
+
+    return quantity;
+}
 
 // Fonctions d'affichage et de rendu HTML
 
-const renderTotalPrice = (products) =>{
-    totalPrice.innerHTML = `
-    ${calculateTotalPrice(products)}
-    `
-} 
 
-const renderItem = (products) =>{
+/**
+ *  Affiche le prix total en HTML
+ * @param {*} products 
+ */
+const renderTotalPrice = (products) => {
+    totalPrice.textContent = calculateTotalPrice(products);
+    totalQuantity.textContent = calculateTotalProductQuantity(products);
+}
 
-    if(products.length == 0){
+
+/**
+ * Crée tous les éléements de l'article
+ * @param {*} products 
+ */
+
+const renderItem = (products) => {
+
+    if (products.length == 0) {
         cartItems.innerHTML = "<h2> Aucun résultat</h2>";
-    }else{
-        cartItems.innerHTML = products
-        .map((product) => {
-            
-            return `
-            <article class="cart__item" data-id="${product._id}" data-color="${product.colorSelected}">
-                <div class="cart__item__img">
-                    <img src="${product.imageUrl}" alt="${product.altTxt}">
-                </div>
-                <div class="cart__item__content">
-                <div class="cart__item__content__description">
-                    <h2>${product.name}</h2>
-                    <p>${product.colorSelected}</p>
-                    <!--<p>${product.price * product.quantity / 100} €</p>-->
-                    <p>${ formatToCurrency(product.price / 100)} €</p>
-                </div>
-                <div class="cart__item__content__settings">
-                    <div class="cart__item__content__settings__quantity">
-                    <p>Qté : </p>
-                    <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${product.quantity}" data-id="${product._id}" data-color="${product.colorSelected}">
-                    </div>
-                    <div class="cart__item__content__settings__delete">
-                    <p class="deleteItem">Supprimer</p>
-                    </div>
-                </div>
-                </div>
-            </article>
-        `
-        }).join("");
+    } else {
+        //cartItems
+        products.forEach(product => {
+
+            const { article,
+                cartItemImg,
+                cartItemContent,
+                cartItemContentDescription,
+                cartItemContentSettings,
+                img,
+                h2,
+                color,
+                price,
+                cartItemContentSettingsQuantity,
+                quantity,
+                itemQuantity,
+                cartItemContentSettingsDelete,
+                deleteItem
+
+            } =
+                createElements(["article:article",
+                    "cartItemImg:div",
+                    "cartItemContent:div",
+                    "cartItemContentDescription:div",
+                    "cartItemContentSettings:div",
+                    "img:img",
+                    "h2:h2",
+                    "color:p",
+                    "price:p",
+                    "cartItemContentSettingsQuantity:div",
+                    "quantity:p",
+                    "itemQuantity:input",
+                    "cartItemContentSettingsDelete",
+                    "deleteItem:p"
+                ]);
+
+
+            [cartItemImg, cartItemContent].forEach(htmlChild => article.appendChild(htmlChild));
+
+            [cartItemContentDescription, cartItemContentSettings].forEach(htmlChild => cartItemContent.appendChild(htmlChild));
+
+            cartItemImg.classList.add('cart__item__img');
+            cartItemContent.classList.add('cart__item__content');
+            cartItemContentDescription.classList.add('cart__item__content__description');
+            cartItemContentSettings.classList.add('cart__item__content__settings');
+
+            cartItemImg.appendChild(img);
+            img.src = product.imageUrl;
+            img.alt = product.altTxt;
+
+            cartItemContentDescription.appendChild(h2);
+            h2.textContent = product.name;
+
+            cartItemContentDescription.appendChild(color);
+            color.textContent = product.colorSelected;
+
+            cartItemContentDescription.appendChild(price);
+            price.textContent = product.price / 100 + " €";
+
+
+            cartItemContentSettings.appendChild(cartItemContentSettingsQuantity);
+            cartItemContentSettingsQuantity.classList.add('cart__item__content__settings__quantity');
+
+            cartItemContentSettingsQuantity.appendChild(quantity);
+            quantity.textContent = "Qté : ";
+
+            cartItemContentSettingsQuantity.appendChild(itemQuantity);
+            itemQuantity.classList.add('itemQuantity');
+            itemQuantity.type = 'number';
+            itemQuantity.name = 'itemQuantity';
+            itemQuantity.min = '1';
+            itemQuantity.max = '100';
+            itemQuantity.valueAsNumber = product.quantity;
+
+            cartItemContentSettings.appendChild(cartItemContentSettingsDelete);
+            cartItemContentSettingsDelete.classList.add('cart__item__content__settings__delete');
+
+            cartItemContentSettingsDelete.appendChild(deleteItem);
+            deleteItem.classList.add("deleteItem");
+            deleteItem.textContent = "Supprimer";
+
+            article.classList.add('cart__item');
+            article.dataset.id = product._id;
+            article.dataset.color = product.colorSelected;
+            cartItems.appendChild(article);
+        });
     }
 }
 
@@ -237,43 +378,41 @@ const renderItem = (products) =>{
 // ____________________________Execution du script________________________________________
 
 fetch(`http://localhost:3000/api/products`)
-.then(res => {
-    if (res.ok) {
-        return res.json();
-    }
-})
-.then(res => {
-    productsInCart = getProductFromCart(res)
-    // console.log(productsInCart)
-    // console.log(getCartProductsID())
-    renderItem(productsInCart);
-    renderTotalPrice(productsInCart);
-    document.querySelectorAll('article').forEach(article => {
-       article.querySelector('input').addEventListener('click', event => {
-            event.preventDefault();
-            setProductQuantity(
-                article.getAttribute("data-id"), 
-                article.getAttribute("data-color"), 
-                article.querySelector('input').value);
-        })
-        article.querySelector('.deleteItem').addEventListener('click', event =>{
-            event.preventDefault();
-            removeFromCart(
-                article.getAttribute("data-id"), 
-                article.getAttribute("data-color") 
-                );
-        })
-      })
-    orderBtn.addEventListener('click', event =>{
-        event.preventDefault();
-        if(productsInCart.length === 0){
-            window.alert("Votre panier est vide !")
-            return
+    .then(res => {
+        if (res.ok) {
+            return res.json();
         }
-        if(isFormValid()){
-            postOrderToServer();
-        }
-
     })
-})
-.catch(err => console.log(err));
+    .then(res => {
+        productsInCart = getProductFromCart(res)
+        renderItem(productsInCart);
+        renderTotalPrice(productsInCart);
+        document.querySelectorAll('article').forEach(article => {
+            article.querySelector('input').addEventListener('click', event => {
+                event.preventDefault();
+                setProductQuantity(
+                    article.getAttribute("data-id"),
+                    article.getAttribute("data-color"),
+                    article.querySelector('input').value);
+            })
+            article.querySelector('.deleteItem').addEventListener('click', event => {
+                event.preventDefault();
+                removeFromCart(
+                    article.getAttribute("data-id"),
+                    article.getAttribute("data-color")
+                );
+            })
+        })
+        orderBtn.addEventListener('click', event => {
+            event.preventDefault();
+            if (productsInCart.length === 0) {
+                window.alert("Votre panier est vide !")
+                return
+            }
+            if (isFormValid()) {
+                postOrderToServer();
+            }
+
+        })
+    })
+    .catch(err => console.log(err));
