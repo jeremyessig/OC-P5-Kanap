@@ -1,3 +1,5 @@
+import { createElements } from "./utils.js";
+
 const items = document.getElementById("items");
 let products = [];
 
@@ -7,14 +9,15 @@ let products = [];
  * @returns Object
  */
 
-const createElements = (elements) => {
-    let destructuring = {}
-    elements.forEach(element => {
-        const key = element
-        destructuring[key] = document.createElement(element);
-    })
-    return destructuring
-}
+// const createElements = (elements) => {
+//     let destructuring = {}
+//     elements.forEach(element => {
+//         const key = element
+//         destructuring[key] = document.createElement(element);
+//     })
+//     return destructuring
+// }
+
 
 /**
  * Affiche tous les produits contenus dans le tableau products
@@ -25,6 +28,7 @@ const renderItems = () => {
     } else {
         products.forEach(product => {
 
+            //const { a, article, img, h3, p } = createElements(["a", "article", "img", "h3", "p"]);
             const { a, article, img, h3, p } = createElements(["a", "article", "img", "h3", "p"]);
 
             [img, h3, p].forEach(htmlChild => article.appendChild(htmlChild));
